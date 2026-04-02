@@ -32,11 +32,12 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .btn-ghost:hover{color:var(--text);border-color:var(--text-dim)}
 .lang-selector select{background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:var(--r);padding:4px 8px;font-family:var(--mono);font-size:10px;cursor:pointer}
 
-/* MAIN LAYOUT */
+/* MAIN LAYOUT — 4 колонки: sidebar | AI | editor | preview+terminal */
 #main-layout{display:flex;flex-direction:row;height:calc(100vh - var(--tbh));margin-top:var(--tbh);overflow:hidden}
 #sidebar-left{width:var(--sbw);min-width:140px;max-width:380px;flex-shrink:0}
+#ai-col{width:280px;min-width:180px;max-width:500px;flex-shrink:0;display:flex;flex-direction:column;border-right:1px solid var(--border);background:var(--bg)}
 #editor-zone{flex:1;min-width:150px}
-#right-zone{width:420px;min-width:160px;max-width:700px;flex-shrink:0}
+#right-zone{width:380px;min-width:160px;max-width:800px;flex-shrink:0}
 
 /* SIDEBAR */
 #sidebar-left{background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
@@ -88,16 +89,16 @@ select{cursor:pointer}
 .CodeMirror{height:100%!important;background:var(--bg)!important;font-family:var(--mono)!important;font-size:13px!important;line-height:1.7!important}
 .CodeMirror-scroll{padding-bottom:20px}
 
-/* RIGHT ZONE */
+/* RIGHT ZONE — только превью + терминал */
 #right-zone{display:flex;flex-direction:column;overflow:hidden}
-#preview-pane{flex:1;min-height:80px}
-#terminal-pane{height:170px;min-height:60px}
-#ai-pane{flex:1;min-height:80px}
-#preview-pane{display:flex;flex-direction:column;border-bottom:1px solid var(--border);overflow:hidden}
+#preview-pane{flex:1;min-height:80px;display:flex;flex-direction:column;border-bottom:1px solid var(--border);overflow:hidden}
+#terminal-pane{height:180px;min-height:60px;display:flex;flex-direction:column;background:var(--bg);overflow:hidden}
+
+/* AI COL */
+#ai-pane{display:flex;flex-direction:column;overflow:hidden;flex:1}
 #preview{flex:1;border:none;background:#fff;width:100%}
 .pane-header{display:flex;align-items:center;gap:7px;padding:5px 11px;background:var(--bg2);border-bottom:1px solid var(--border);font-family:var(--mono);font-size:11px;color:var(--text-dim);flex-shrink:0}
 .pane-header span{flex:1}
-#terminal-pane{display:flex;flex-direction:column;border-bottom:1px solid var(--border);background:var(--bg);overflow:hidden}
 #terminal-output{flex:1;padding:6px 11px;overflow-y:auto;font-family:var(--mono);font-size:11px;line-height:1.6}
 .term-line{margin-bottom:1px}
 .term-line.cmd{color:var(--accent)}.term-line.out{color:var(--text-dim)}.term-line.err{color:var(--error)}.term-line.ok{color:var(--accent)}
@@ -105,7 +106,6 @@ select{cursor:pointer}
 .prompt{color:var(--accent);font-family:var(--mono);font-size:12px}
 #termInput{flex:1;background:transparent;border:none;padding:3px 0;font-family:var(--mono);font-size:11px;color:var(--text)}
 #termInput:focus{outline:none;border:none}
-#ai-pane{display:flex;flex-direction:column;overflow:hidden}
 #chat-messages{flex:1;overflow-y:auto;padding:8px 11px;display:flex;flex-direction:column;gap:7px}
 .msg{display:flex;gap:7px;align-items:flex-start;animation:msgIn .2s ease}
 @keyframes msgIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
@@ -247,6 +247,30 @@ select{cursor:pointer}
       </div>
     </aside>
 
+    <!-- AI COLUMN (между сайдбаром и редактором) -->
+    <div class="resizer-col" id="resizerAiLeft"></div>
+    <div id="ai-col">
+      <div id="ai-pane">
+        <div class="pane-header">
+          <span>🤖 AI-Ассистент</span>
+          <div class="robot-status" id="robotStatus">😊</div>
+        </div>
+        <div id="chat-messages"></div>
+        <div id="chat-input-area">
+          <div class="quick-prompts">
+            <button class="qp-btn" data-p="Объясни этот код">💡 Объясни</button>
+            <button class="qp-btn" data-p="Найди ошибки в коде">🐛 Дебаг</button>
+            <button class="qp-btn" data-p="Улучши код">✨ Улучши</button>
+            <button class="qp-btn" data-p="Создай робота-друга на HTML/CSS/JS">🤖 Робот</button>
+          </div>
+          <div class="chat-row">
+            <textarea id="chatInput" placeholder="Напиши промт или вопрос..."></textarea>
+            <button id="btnSend" class="btn-send">➤</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- EDITOR -->
     <div class="resizer-col" id="resizerLeft"></div>
     <section id="editor-zone">
@@ -257,7 +281,7 @@ select{cursor:pointer}
     </section>
     <div class="resizer-col" id="resizerRight"></div>
 
-    <!-- RIGHT: PREVIEW + TERMINAL + AI -->
+    <!-- RIGHT: PREVIEW + TERMINAL -->
     <section id="right-zone">
       <div id="preview-pane">
         <div class="pane-header">
@@ -277,26 +301,6 @@ select{cursor:pointer}
         <div class="terminal-input-row">
           <span class="prompt">$</span>
           <input type="text" id="termInput" placeholder="Введи команду..."/>
-        </div>
-      </div>
-      <div class="resizer-row" id="resizerBottom"></div>
-      <div id="ai-pane">
-        <div class="pane-header">
-          <span>🤖 AI-Ассистент</span>
-          <div class="robot-status" id="robotStatus">😊</div>
-        </div>
-        <div id="chat-messages"></div>
-        <div id="chat-input-area">
-          <div class="quick-prompts">
-            <button class="qp-btn" data-p="Объясни этот код">💡 Объясни</button>
-            <button class="qp-btn" data-p="Найди ошибки в коде">🐛 Дебаг</button>
-            <button class="qp-btn" data-p="Улучши код">✨ Улучши</button>
-            <button class="qp-btn" data-p="Создай робота-друга на HTML/CSS/JS">🤖 Робот</button>
-          </div>
-          <div class="chat-row">
-            <textarea id="chatInput" placeholder="Напиши промт или вопрос..."></textarea>
-            <button id="btnSend" class="btn-send">➤</button>
-          </div>
         </div>
       </div>
     </section>
@@ -1021,33 +1025,55 @@ const GITHUB = {
 // ══════════════════════════════════════════════════
 const RESIZER = {
   init() {
-    this._colResize('resizerLeft',  'sidebar-left', 'editor-zone',  'horizontal', 140, 380);
-    this._colResize('resizerRight', 'editor-zone',  'right-zone',   'horizontal', 150, 700);
-    this._rowResize('resizerTop',    'preview-pane', 'terminal-pane', 60, 600);
-    this._rowResize('resizerBottom', 'terminal-pane','ai-pane',       60, 500);
+    // Горизонтальные разделители между колонками
+    this._colResize('resizerAiLeft', 'sidebar-left', 'ai-col',      140, 400);
+    this._colResize('resizerLeft',   'ai-col',       'editor-zone', 180, 600);
+    this._colResize('resizerRight',  'right-zone',   'editor-zone', 160, 800, true); // true = справа
+    // Вертикальный разделитель в правой колонке
+    this._rowResize('resizerTop', 'preview-pane', 'terminal-pane', 60, 700);
   },
 
-  _colResize(resizerId, leftId, rightId, _dir, minLeft, maxLeft) {
+  // Горизонтальный ресайзер колонок
+  // rightMode=true — разделитель слева от right-zone, двигает right-zone
+  _colResize(resizerId, panelAId, panelBId, minA, maxA, rightMode=false) {
     const el = document.getElementById(resizerId);
-    const left = document.getElementById(leftId);
-    const right = document.getElementById(rightId);
-    if (!el || !left || !right) return;
+    if (!el) return;
 
-    let startX, startW;
+    let startX, startWA, startWB, layout;
+
     el.addEventListener('mousedown', e => {
-      startX = e.clientX;
-      startW = left.getBoundingClientRect().width;
+      const panelA = document.getElementById(panelAId);
+      const panelB = document.getElementById(panelBId);
+      if (!panelA || !panelB) return;
+
+      startX  = e.clientX;
+      startWA = panelA.getBoundingClientRect().width;
+      startWB = panelB.getBoundingClientRect().width;
+      layout  = document.getElementById('main-layout').getBoundingClientRect().width;
+
       el.classList.add('dragging');
-      document.body.style.cursor = 'col-resize';
-      document.body.style.userSelect = 'none';
+      document.body.style.cssText += 'cursor:col-resize;user-select:none;';
 
       const onMove = e => {
         const delta = e.clientX - startX;
-        const newW = Math.min(maxLeft, Math.max(minLeft, startW + delta));
-        left.style.width = newW + 'px';
-        left.style.flex = 'none';
+        const panelA = document.getElementById(panelAId);
+        const panelB = document.getElementById(panelBId);
+
+        if (!rightMode) {
+          // Двигаем левую панель — правая (flex:1) сама подстраивается
+          const newW = Math.min(maxA, Math.max(minA, startWA + delta));
+          panelA.style.width = newW + 'px';
+          panelA.style.flex  = 'none';
+        } else {
+          // rightMode: двигаем right-zone (right panel) — editor (flex:1) подстраивается
+          const newW = Math.min(maxA, Math.max(minA, startWA - delta));
+          panelA.style.width = newW + 'px';
+          panelA.style.flex  = 'none';
+        }
+
         if (window.cmEditor) window.cmEditor.refresh();
       };
+
       const onUp = () => {
         el.classList.remove('dragging');
         document.body.style.cursor = '';
@@ -1056,32 +1082,36 @@ const RESIZER = {
         document.removeEventListener('mouseup', onUp);
         if (window.cmEditor) window.cmEditor.refresh();
       };
+
       document.addEventListener('mousemove', onMove);
       document.addEventListener('mouseup', onUp);
       e.preventDefault();
     });
   },
 
-  _rowResize(resizerId, topId, botId, minTop, maxTop) {
+  // Вертикальный ресайзер строк внутри колонки
+  _rowResize(resizerId, topId, botId, minH, maxH) {
     const el = document.getElementById(resizerId);
-    const top = document.getElementById(topId);
-    const bot = document.getElementById(botId);
-    if (!el || !top || !bot) return;
+    if (!el) return;
 
     let startY, startH;
+
     el.addEventListener('mousedown', e => {
+      const top = document.getElementById(topId);
+      if (!top) return;
       startY = e.clientY;
       startH = top.getBoundingClientRect().height;
+
       el.classList.add('dragging');
-      document.body.style.cursor = 'row-resize';
-      document.body.style.userSelect = 'none';
+      document.body.style.cssText += 'cursor:row-resize;user-select:none;';
 
       const onMove = e => {
-        const delta = e.clientY - startY;
-        const newH = Math.min(maxTop, Math.max(minTop, startH + delta));
+        const top = document.getElementById(topId);
+        const newH = Math.min(maxH, Math.max(minH, startH + (e.clientY - startY)));
         top.style.height = newH + 'px';
-        top.style.flex = 'none';
+        top.style.flex   = 'none';
       };
+
       const onUp = () => {
         el.classList.remove('dragging');
         document.body.style.cursor = '';
@@ -1089,6 +1119,7 @@ const RESIZER = {
         document.removeEventListener('mousemove', onMove);
         document.removeEventListener('mouseup', onUp);
       };
+
       document.addEventListener('mousemove', onMove);
       document.addEventListener('mouseup', onUp);
       e.preventDefault();
