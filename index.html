@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>VibeCode Studio ⚡</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+<style>
+:root{--bg:#0d0f17;--bg2:#12151f;--bg3:#1a1e2e;--border:#2a2f45;--accent:#7fff6e;--accent2:#ff6edb;--accent3:#6eb5ff;--text:#d8e0ff;--text-dim:#5a6280;--error:#ff5e6e;--warning:#ffb845;--r:8px;--mono:'Space Mono',monospace;--ui:'Syne',sans-serif;--tbh:48px;--sbw:210px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--ui);font-size:13px;line-height:1.5}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* TOPBAR */
+#topbar{height:var(--tbh);background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:10px;position:fixed;top:0;left:0;right:0;z-index:100}
+.logo{display:flex;align-items:center;gap:6px;margin-right:6px}
+.logo-icon{font-size:18px}
+.logo-text{font-family:var(--ui);font-weight:800;font-size:16px;color:var(--accent);letter-spacing:-0.5px}
+.logo-sub{font-family:var(--mono);font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:2px}
+.topbar-actions{display:flex;align-items:center;gap:7px;margin-left:auto}
+.btn-run{background:var(--accent);color:#0d0f17;border:none;border-radius:var(--r);padding:5px 14px;font-family:var(--mono);font-size:11px;font-weight:700;cursor:pointer;transition:all .15s}
+.btn-run:hover{background:#a8ff9e;transform:scale(1.03)}
+.btn-ghost{background:transparent;color:var(--text-dim);border:1px solid var(--border);border-radius:var(--r);padding:4px 10px;font-size:11px;cursor:pointer;transition:all .15s}
+.btn-ghost:hover{color:var(--text);border-color:var(--text-dim)}
+.lang-selector select{background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:var(--r);padding:4px 8px;font-family:var(--mono);font-size:10px;cursor:pointer}
+
+/* MAIN LAYOUT */
+#main-layout{display:flex;flex-direction:row;height:calc(100vh - var(--tbh));margin-top:var(--tbh);overflow:hidden}
+#sidebar-left{width:var(--sbw);min-width:140px;max-width:380px;flex-shrink:0}
+#editor-zone{flex:1;min-width:150px}
+#right-zone{width:420px;min-width:160px;max-width:700px;flex-shrink:0}
+
+/* SIDEBAR */
+#sidebar-left{background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.sidebar-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
+.stab{flex:1;padding:9px 4px;background:transparent;border:none;font-size:15px;cursor:pointer;color:var(--text-dim);transition:all .15s;border-bottom:2px solid transparent}
+.stab:hover{color:var(--text);background:var(--bg3)}
+.stab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.sidebar-panel{display:none;flex-direction:column;padding:10px;overflow-y:auto;flex:1;gap:5px}
+.sidebar-panel.active{display:flex}
+.panel-title{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-dim);margin-bottom:2px;margin-top:4px}
+#fileList{display:flex;flex-direction:column;gap:2px}
+.file-item{display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:6px;cursor:pointer;font-family:var(--mono);font-size:11px;color:var(--text-dim);transition:all .15s;border:1px solid transparent}
+.file-item:hover{color:var(--text);background:var(--bg3)}
+.file-item.active{color:var(--accent);background:rgba(127,255,110,.08);border-color:rgba(127,255,110,.2)}
+.file-actions{display:flex;gap:5px;margin-top:2px}
+#templates{display:flex;flex-direction:column;gap:3px}
+.tpl-btn{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:5px 9px;color:var(--text-dim);font-size:11px;cursor:pointer;text-align:left;transition:all .15s}
+.tpl-btn:hover{color:var(--accent2);border-color:var(--accent2)}
+.field-label{font-family:var(--mono);font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+.input-row{display:flex;gap:3px}
+.input-row input{flex:1}
+input[type=text],input[type=password],select,textarea{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 9px;font-family:var(--mono);font-size:11px;outline:none;transition:border-color .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+select{cursor:pointer}
+.btn-row{display:flex;gap:5px;margin-top:3px}
+.btn-sm{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:5px 7px;color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-sm:hover{color:var(--text);border-color:var(--text-dim)}
+.btn-sm.primary{background:rgba(127,255,110,.1);border-color:var(--accent);color:var(--accent)}
+.btn-sm.primary:hover{background:rgba(127,255,110,.2)}
+.btn-icon{background:transparent;border:none;color:var(--text-dim);cursor:pointer;padding:3px 5px;border-radius:4px;font-size:13px;transition:color .15s}
+.btn-icon:hover{color:var(--text)}
+.status-msg{font-family:var(--mono);font-size:10px;min-height:14px}
+.status-msg.ok{color:var(--accent)}.status-msg.err{color:var(--error)}
+.warning-box{background:rgba(255,184,69,.08);border:1px solid rgba(255,184,69,.3);border-radius:6px;padding:5px 7px;font-size:10px;color:var(--warning);line-height:1.4}
+.hint-text{font-size:11px;color:var(--text-dim);line-height:1.4}
+.gh-user{display:flex;align-items:center;gap:7px;padding:7px;background:var(--bg3);border-radius:6px;margin-bottom:4px}
+.gh-user img{border-radius:50%}
+#repoList{display:flex;flex-direction:column;gap:2px}
+.repo-item{padding:4px 8px;border-radius:4px;cursor:pointer;font-family:var(--mono);font-size:10px;color:var(--text-dim);transition:all .15s}
+.repo-item:hover{color:var(--accent3);background:rgba(110,181,255,.1)}
+
+/* EDITOR */
+#editor-zone{display:flex;flex-direction:column;border-right:1px solid var(--border);overflow:hidden}
+#editor-tabs{display:flex;align-items:center;background:var(--bg2);border-bottom:1px solid var(--border);min-height:34px;overflow-x:auto;padding:0 6px;gap:2px;flex-shrink:0}
+.editor-tab{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:6px 6px 0 0;cursor:pointer;font-family:var(--mono);font-size:11px;color:var(--text-dim);white-space:nowrap;transition:all .15s;border-bottom:2px solid transparent}
+.editor-tab:hover{color:var(--text)}
+.editor-tab.active{color:var(--accent);border-bottom-color:var(--accent);background:rgba(127,255,110,.05)}
+#editor-wrap{flex:1;overflow:hidden;position:relative}
+.CodeMirror{height:100%!important;background:var(--bg)!important;font-family:var(--mono)!important;font-size:13px!important;line-height:1.7!important}
+.CodeMirror-scroll{padding-bottom:20px}
+
+/* RIGHT ZONE */
+#right-zone{display:flex;flex-direction:column;overflow:hidden}
+#preview-pane{flex:1;min-height:80px}
+#terminal-pane{height:170px;min-height:60px}
+#ai-pane{flex:1;min-height:80px}
+#preview-pane{display:flex;flex-direction:column;border-bottom:1px solid var(--border);overflow:hidden}
+#preview{flex:1;border:none;background:#fff;width:100%}
+.pane-header{display:flex;align-items:center;gap:7px;padding:5px 11px;background:var(--bg2);border-bottom:1px solid var(--border);font-family:var(--mono);font-size:11px;color:var(--text-dim);flex-shrink:0}
+.pane-header span{flex:1}
+#terminal-pane{display:flex;flex-direction:column;border-bottom:1px solid var(--border);background:var(--bg);overflow:hidden}
+#terminal-output{flex:1;padding:6px 11px;overflow-y:auto;font-family:var(--mono);font-size:11px;line-height:1.6}
+.term-line{margin-bottom:1px}
+.term-line.cmd{color:var(--accent)}.term-line.out{color:var(--text-dim)}.term-line.err{color:var(--error)}.term-line.ok{color:var(--accent)}
+.terminal-input-row{display:flex;align-items:center;gap:7px;padding:5px 11px;border-top:1px solid var(--border);flex-shrink:0}
+.prompt{color:var(--accent);font-family:var(--mono);font-size:12px}
+#termInput{flex:1;background:transparent;border:none;padding:3px 0;font-family:var(--mono);font-size:11px;color:var(--text)}
+#termInput:focus{outline:none;border:none}
+#ai-pane{display:flex;flex-direction:column;overflow:hidden}
+#chat-messages{flex:1;overflow-y:auto;padding:8px 11px;display:flex;flex-direction:column;gap:7px}
+.msg{display:flex;gap:7px;align-items:flex-start;animation:msgIn .2s ease}
+@keyframes msgIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.msg-avatar{font-size:16px;flex-shrink:0;margin-top:2px}
+.msg-body{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:7px 9px;font-size:12px;line-height:1.5;max-width:88%;word-break:break-word}
+.msg.user .msg-body{background:rgba(127,255,110,.07);border-color:rgba(127,255,110,.2)}
+.msg-body pre{background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:7px;margin-top:5px;overflow-x:auto;font-family:var(--mono);font-size:10px;line-height:1.5}
+.msg-body code{font-family:var(--mono);font-size:10px;color:var(--accent3)}
+.btn-apply{display:inline-block;margin-top:5px;background:rgba(127,255,110,.1);border:1px solid var(--accent);border-radius:5px;padding:2px 9px;color:var(--accent);font-family:var(--mono);font-size:10px;cursor:pointer;transition:background .15s}
+.btn-apply:hover{background:rgba(127,255,110,.2)}
+#chat-input-area{padding:7px 9px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:5px;flex-shrink:0}
+.quick-prompts{display:flex;gap:4px;flex-wrap:wrap}
+.qp-btn{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:2px 9px;font-size:10px;color:var(--text-dim);cursor:pointer;transition:all .15s;white-space:nowrap}
+.qp-btn:hover{color:var(--accent2);border-color:var(--accent2)}
+.chat-row{display:flex;gap:5px;align-items:flex-end}
+#chatInput{flex:1;min-height:34px;max-height:70px;resize:none;padding:7px 9px;font-size:12px}
+.btn-send{background:var(--accent);color:#0d0f17;border:none;border-radius:7px;width:34px;height:34px;font-size:13px;cursor:pointer;flex-shrink:0;transition:all .15s}
+.btn-send:hover{background:#a8ff9e}.btn-send:disabled{opacity:.4;cursor:not-allowed}
+.robot-status{font-size:18px;transition:all .3s}
+.robot-status.thinking{animation:bounce .5s infinite alternate}
+@keyframes bounce{from{transform:translateY(0)}to{transform:translateY(-4px)}}
+.typing-dots span{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--text-dim);margin:0 2px;animation:dot 1.2s infinite}
+.typing-dots span:nth-child(2){animation-delay:.2s}.typing-dots span:nth-child(3){animation-delay:.4s}
+@keyframes dot{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-4px);opacity:1}}
+
+/* RESIZERS */
+.resizer-col{width:4px;cursor:col-resize;background:transparent;transition:background .15s;z-index:10;flex-shrink:0;position:relative}
+.resizer-col:hover,.resizer-col.dragging{background:var(--accent)}
+.resizer-col::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:2px;height:32px;border-radius:1px;background:var(--border)}
+.resizer-row{height:4px;cursor:row-resize;background:transparent;transition:background .15s;z-index:10;flex-shrink:0;position:relative}
+.resizer-row:hover,.resizer-row.dragging{background:var(--accent)}
+.resizer-row::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);height:2px;width:32px;border-radius:1px;background:var(--border)}
+
+/* MODEL SELECT loading state */
+#orModel option.loading{color:var(--text-dim);font-style:italic}
+.model-info{font-family:var(--mono);font-size:9px;color:var(--text-dim);margin-top:2px;line-height:1.4}
+
+/* MODALS */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:center;justify-content:center}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px;min-width:270px;display:flex;flex-direction:column;gap:7px}
+.modal-title{font-weight:700;font-size:14px;color:var(--text);margin-bottom:3px}
+
+/* TOAST */
+#toast-container{position:fixed;bottom:18px;right:18px;z-index:300;display:flex;flex-direction:column;gap:7px}
+.toast{background:var(--bg2);border:1px solid var(--border);border-radius:7px;padding:9px 13px;font-family:var(--mono);font-size:11px;color:var(--text);min-width:190px;animation:toastIn .2s ease;box-shadow:0 4px 18px rgba(0,0,0,.5)}
+.toast.ok{border-color:var(--accent);color:var(--accent)}.toast.err{border-color:var(--error);color:var(--error)}.toast.info{border-color:var(--accent3);color:var(--accent3)}
+@keyframes toastIn{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:translateX(0)}}
+</style>
+</head>
+<body>
+<div id="app">
+  <header id="topbar">
+    <div class="logo">
+      <span class="logo-icon">⚡</span>
+      <span class="logo-text">VibeCode</span>
+      <span class="logo-sub">Studio</span>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn-run" id="btnRun">▶ Запустить</button>
+      <button class="btn-ghost" id="btnPublish">🌐 Публикуй</button>
+      <button class="btn-ghost" id="btnShare">📤 Поделиться</button>
+      <div class="lang-selector">
+        <select id="langSelect">
+          <option value="html">HTML/CSS/JS</option>
+          <option value="python">Python</option>
+          <option value="js">JavaScript</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <div id="main-layout">
+    <!-- SIDEBAR -->
+    <aside id="sidebar-left">
+      <div class="sidebar-tabs">
+        <button class="stab active" data-tab="files">📁</button>
+        <button class="stab" data-tab="openrouter">🤖</button>
+        <button class="stab" data-tab="github">🐙</button>
+      </div>
+
+      <div class="sidebar-panel active" id="panel-files">
+        <div class="panel-title">Файлы проекта</div>
+        <div id="fileList"></div>
+        <div class="file-actions">
+          <button class="btn-sm" id="btnNewFile">📄 Новый</button>
+          <button class="btn-sm" id="btnDeleteFile">🗑 Удалить</button>
+        </div>
+        <div class="panel-title">Шаблоны</div>
+        <div id="templates">
+          <button class="tpl-btn" data-tpl="hello">👋 Hello World</button>
+          <button class="tpl-btn" data-tpl="robot">🤖 Робот-друг</button>
+          <button class="tpl-btn" data-tpl="game">🎮 Мини-игра</button>
+          <button class="tpl-btn" data-tpl="chart">📊 График</button>
+        </div>
+      </div>
+
+      <div class="sidebar-panel" id="panel-openrouter">
+        <div class="panel-title">🤖 OpenRouter AI</div>
+        <label class="field-label">API Ключ</label>
+        <div class="input-row">
+          <input type="password" id="orKey" placeholder="sk-or-..."/>
+          <button class="btn-icon" id="btnShowKey">👁</button>
+        </div>
+        <label class="field-label">Модель</label>
+        <select id="orModel">
+          <option value="openai/gpt-4o-mini">GPT-4o Mini ⚡ (по умолчанию)</option>
+        </select>
+        <div id="modelInfo" class="model-info"></div>
+        <div class="btn-row">
+          <button class="btn-sm" id="btnLoadModels">📋 Загрузить модели</button>
+        </div>
+        <div class="btn-row">
+          <button class="btn-sm" id="btnCheckKey">🔍 Проверить ключ</button>
+          <button class="btn-sm primary" id="btnSaveKey">💾 Сохранить</button>
+        </div>
+        <div id="keyStatus" class="status-msg"></div>
+        <div class="warning-box">⚠️ Храни ключ в тайне!</div>
+      </div>
+
+      <div class="sidebar-panel" id="panel-github">
+        <div class="panel-title">🐙 GitHub</div>
+        <div id="ghLoginSection">
+          <p class="hint-text">Войди через персональный токен</p>
+          <input type="password" id="ghToken" placeholder="ghp_..." style="margin-top:5px"/>
+          <div class="warning-box" style="margin-top:5px">⚠️ Права: repo + gist</div>
+          <button class="btn-sm primary" id="btnGhLogin" style="margin-top:5px;width:100%">🔐 Войти</button>
+        </div>
+        <div id="ghUserSection" style="display:none;flex-direction:column;gap:5px">
+          <div class="gh-user">
+            <img id="ghAvatar" src="" width="28" height="28"/>
+            <span id="ghUsername" style="font-family:var(--mono);font-size:11px;color:var(--accent)"></span>
+          </div>
+          <button class="btn-sm" id="btnGhSave">💾 Сохранить проект</button>
+          <button class="btn-sm" id="btnGhPublish">🌐 GitHub Pages</button>
+          <button class="btn-sm" id="btnGhLogout">👋 Выйти</button>
+          <div class="panel-title">Мои репозитории</div>
+          <div id="repoList"></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- EDITOR -->
+    <div class="resizer-col" id="resizerLeft"></div>
+    <section id="editor-zone">
+      <div id="editor-tabs"></div>
+      <div id="editor-wrap">
+        <textarea id="codeEditor"></textarea>
+      </div>
+    </section>
+    <div class="resizer-col" id="resizerRight"></div>
+
+    <!-- RIGHT: PREVIEW + TERMINAL + AI -->
+    <section id="right-zone">
+      <div id="preview-pane">
+        <div class="pane-header">
+          <span>🖥 Живое превью</span>
+          <button class="btn-icon" id="btnRefresh">🔄</button>
+          <button class="btn-icon" id="btnFullscreen">⛶</button>
+        </div>
+        <iframe id="preview" sandbox="allow-scripts allow-same-origin allow-modals"></iframe>
+      </div>
+      <div class="resizer-row" id="resizerTop"></div>
+      <div id="terminal-pane">
+        <div class="pane-header">
+          <span>⚡ Терминал</span>
+          <button class="btn-icon" id="btnClearTerm">🗑</button>
+        </div>
+        <div id="terminal-output"></div>
+        <div class="terminal-input-row">
+          <span class="prompt">$</span>
+          <input type="text" id="termInput" placeholder="Введи команду..."/>
+        </div>
+      </div>
+      <div class="resizer-row" id="resizerBottom"></div>
+      <div id="ai-pane">
+        <div class="pane-header">
+          <span>🤖 AI-Ассистент</span>
+          <div class="robot-status" id="robotStatus">😊</div>
+        </div>
+        <div id="chat-messages"></div>
+        <div id="chat-input-area">
+          <div class="quick-prompts">
+            <button class="qp-btn" data-p="Объясни этот код">💡 Объясни</button>
+            <button class="qp-btn" data-p="Найди ошибки в коде">🐛 Дебаг</button>
+            <button class="qp-btn" data-p="Улучши код">✨ Улучши</button>
+            <button class="qp-btn" data-p="Создай робота-друга на HTML/CSS/JS">🤖 Робот</button>
+          </div>
+          <div class="chat-row">
+            <textarea id="chatInput" placeholder="Напиши промт или вопрос..."></textarea>
+            <button id="btnSend" class="btn-send">➤</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Modals -->
+  <div class="modal-overlay" id="modalNewFile" style="display:none">
+    <div class="modal">
+      <div class="modal-title">📄 Новый файл</div>
+      <input type="text" id="newFileName" placeholder="index.html"/>
+      <div class="btn-row">
+        <button class="btn-sm" id="btnCancelFile">Отмена</button>
+        <button class="btn-sm primary" id="btnConfirmFile">Создать</button>
+      </div>
+    </div>
+  </div>
+  <div class="modal-overlay" id="modalGhSave" style="display:none">
+    <div class="modal">
+      <div class="modal-title">💾 Сохранить в GitHub</div>
+      <label class="field-label">Название проекта</label>
+      <input type="text" id="ghRepoName" placeholder="my-vibe-project"/>
+      <label class="field-label">Описание</label>
+      <input type="text" id="ghRepoDesc" placeholder="Мой крутой проект!"/>
+      <div class="btn-row">
+        <button class="btn-sm" id="btnCancelGh">Отмена</button>
+        <button class="btn-sm primary" id="btnConfirmGh">💾 Сохранить</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════════
+const TOAST = {
+  show(msg, type='info', dur=3000) {
+    const c = document.getElementById('toast-container');
+    const t = document.createElement('div');
+    t.className = `toast ${type}`;
+    t.textContent = msg;
+    c.appendChild(t);
+    setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),300); }, dur);
+  }
+};
+
+// ══════════════════════════════════════════════════
+// TEMPLATES
+// ══════════════════════════════════════════════════
+const TEMPLATES = {
+  hello: {
+    'index.html': `<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Привет, Мир! 👋</title>
+  <style>
+    body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+           background:linear-gradient(135deg,#667eea,#764ba2); font-family:'Segoe UI',sans-serif; }
+    .box { text-align:center; color:#fff; padding:40px; }
+    h1 { font-size:2.5em; margin-bottom:12px; }
+    button { background:#fff; color:#764ba2; border:none; padding:12px 28px; font-size:1em;
+             border-radius:30px; cursor:pointer; transition:transform .2s; }
+    button:hover { transform:scale(1.07); }
+    #out { margin-top:18px; font-size:1.4em; min-height:40px; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>Привет, Мир! 👋</h1>
+    <p>Мой первый VibeCode проект!</p>
+    <br>
+    <button onclick="vibe()">✨ Нажми меня!</button>
+    <div id="out"></div>
+  </div>
+  <script>
+    const v = ['🎉','✨','🌈','🦄','💖','🚀','🎊']; let i=0;
+    function vibe(){ document.getElementById('out').textContent = v[i%v.length]+' Вайб-код это круто! '+v[i%v.length]; i++; }
+  <\/script>
+</body>
+</html>`,
+  },
+  robot: {
+    'index.html': `<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Мой Робот-Друг 🤖</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:linear-gradient(160deg,#0f0c29,#302b63,#24243e);min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:'Segoe UI',sans-serif}
+    .scene{display:flex;flex-direction:column;align-items:center;gap:18px}
+    .robot{display:flex;flex-direction:column;align-items:center;gap:3px}
+    .head{background:#4ecdc4;width:80px;height:70px;border-radius:14px;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:0 0 18px rgba(78,205,196,.4)}
+    .antenna{position:absolute;top:-13px;width:4px;height:13px;background:#4ecdc4;border-radius:2px}
+    .antenna::before{content:'';position:absolute;top:-6px;left:50%;transform:translateX(-50%);width:10px;height:10px;background:#ff6b6b;border-radius:50%;box-shadow:0 0 8px #ff6b6b}
+    .eyes{display:flex;gap:14px}
+    .eye{width:13px;height:13px;background:#fff;border-radius:50%;position:relative}
+    .eye::after{content:'';position:absolute;top:3px;left:3px;width:7px;height:7px;background:#1a1a2e;border-radius:50%}
+    .mouth{font-size:17px;transition:all .3s}
+    .body{background:#45b7d1;width:88px;height:78px;border-radius:11px;position:relative;display:flex;align-items:center;justify-content:center;box-shadow:0 0 18px rgba(69,183,209,.4)}
+    .light{width:22px;height:22px;border-radius:50%;background:#7fff6e;box-shadow:0 0 14px #7fff6e;transition:all .3s}
+    .arms{position:absolute;top:10px;left:-22px;right:-22px;display:flex;justify-content:space-between}
+    .arm{width:17px;height:58px;background:#45b7d1;border-radius:8px;transition:transform .4s}
+    .arm.L{transform-origin:top right}.arm.R{transform-origin:top left}
+    .legs{display:flex;gap:11px}
+    .leg{width:21px;height:38px;background:#4ecdc4;border-radius:0 0 7px 7px}
+    .bubble{background:rgba(255,255,255,.1);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.2);color:#fff;padding:11px 18px;border-radius:18px;font-size:14px;max-width:250px;text-align:center;transition:all .3s}
+    .controls{display:flex;gap:7px;flex-wrap:wrap;justify-content:center}
+    .controls button{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.3);color:#fff;padding:7px 14px;border-radius:18px;cursor:pointer;font-size:12px;transition:all .2s}
+    .controls button:hover{background:rgba(255,255,255,.25);transform:scale(1.05)}
+    @keyframes dance{0%,100%{transform:translateX(0) rotate(0)}25%{transform:translateX(-9px) rotate(-5deg)}75%{transform:translateX(9px) rotate(5deg)}}
+  </style>
+</head>
+<body>
+  <div class="scene">
+    <div class="robot" id="robot">
+      <div class="head">
+        <div class="antenna"></div>
+        <div class="eyes"><div class="eye"></div><div class="eye"></div></div>
+        <div class="mouth" id="mouth">😊</div>
+      </div>
+      <div class="body">
+        <div class="light" id="light"></div>
+        <div class="arms">
+          <div class="arm L" id="armL"></div>
+          <div class="arm R" id="armR"></div>
+        </div>
+      </div>
+      <div class="legs"><div class="leg"></div><div class="leg"></div></div>
+    </div>
+    <div class="bubble" id="bubble">Привет! Я твой робот-друг! 🤖</div>
+    <div class="controls">
+      <button onclick="wave()">👋 Помаши</button>
+      <button onclick="happy()">😊 Радуйся</button>
+      <button onclick="dance()">💃 Танцуй</button>
+      <button onclick="speak()">🗣 Говори</button>
+    </div>
+  </div>
+  <script>
+    const phrases=['Привет! Я твой робот-друг! 🤖','Вайб-код — это супер! ✨','Ты лучший программист! 💖','Давай создадим что-нибудь крутое! 🚀','Бип-буп! Обрабатываю данные... 💾'];
+    function say(t){document.getElementById('bubble').textContent=t}
+    function wave(){document.getElementById('armL').style.transform='rotate(-60deg)';document.getElementById('armR').style.transform='rotate(60deg)';say('Привет привет! 👋👋');setTimeout(()=>{document.getElementById('armL').style.transform='';document.getElementById('armR').style.transform=''},1000)}
+    function happy(){document.getElementById('mouth').textContent='😄';document.getElementById('light').style.background='#ff6b6b';document.getElementById('light').style.boxShadow='0 0 18px #ff6b6b';say('Я так счастлив! 🎉');setTimeout(()=>{document.getElementById('mouth').textContent='😊';document.getElementById('light').style.background='#7fff6e';document.getElementById('light').style.boxShadow='0 0 14px #7fff6e'},2000)}
+    function dance(){document.getElementById('robot').style.animation='dance .5s ease 4';say('Танцуем! 💃🎵');setTimeout(()=>document.getElementById('robot').style.animation='',2200)}
+    function speak(){say(phrases[Math.floor(Math.random()*phrases.length)])}
+  <\/script>
+</body>
+</html>`,
+  },
+  game: {
+    'index.html': `<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Поймай звёздочки! ⭐</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:#0f0f23;display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:'Segoe UI',sans-serif}
+    #game{width:100%;max-width:580px;height:480px;position:relative;background:linear-gradient(180deg,#0f0c29,#1a1042);border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,.1)}
+    #board{position:absolute;top:0;left:0;right:0;padding:10px 18px;display:flex;justify-content:space-between;color:#fff;font-size:15px;background:rgba(0,0,0,.3);z-index:10}
+    #arena{width:100%;height:100%;position:relative;cursor:crosshair}
+    .star{position:absolute;font-size:26px;cursor:pointer;user-select:none;animation:pop-in .3s ease}
+    @keyframes pop-in{from{opacity:0;transform:scale(0)}to{opacity:1;transform:scale(1)}}
+    @keyframes pop-out{0%{transform:scale(1)}50%{transform:scale(1.5)}100%{transform:scale(0);opacity:0}}
+    .popping{animation:pop-out .3s ease forwards}
+    #overlay{position:absolute;inset:0;background:rgba(0,0,0,.72);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:11px;color:#fff;text-align:center;padding:20px}
+    #overlay h2{font-size:1.8em}
+    #overlay button{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;padding:11px 30px;font-size:1em;border-radius:28px;cursor:pointer;margin-top:7px}
+  </style>
+</head>
+<body>
+  <div id="game">
+    <div id="board">
+      <span>⭐ Счёт: <b id="score">0</b></span>
+      <span>⏱ <b id="timer">30</b>с</span>
+    </div>
+    <div id="arena"></div>
+    <div id="overlay">
+      <h2>Поймай все звёздочки!</h2>
+      <p>Нажимай на них пока не истечёт время</p>
+      <button onclick="startGame()">🚀 Играть!</button>
+    </div>
+  </div>
+  <script>
+    let score=0,tLeft=30,ivl,sivl,running=false;
+    const em=['⭐','🌟','💫','✨','🎇','⚡','🌙','🎊'];
+    function startGame(){
+      score=0;tLeft=30;running=true;
+      document.getElementById('score').textContent=0;
+      document.getElementById('timer').textContent=30;
+      document.getElementById('overlay').style.display='none';
+      document.getElementById('arena').innerHTML='';
+      ivl=setInterval(()=>{tLeft--;document.getElementById('timer').textContent=tLeft;if(tLeft<=0)endGame()},1000);
+      sivl=setInterval(spawnStar,700);spawnStar();
+    }
+    function spawnStar(){
+      if(!running)return;
+      const a=document.getElementById('arena'),s=document.createElement('div');
+      s.className='star';s.textContent=em[Math.floor(Math.random()*em.length)];
+      s.style.left=Math.random()*87+'%';s.style.top=Math.random()*78+10+'%';
+      s.onclick=e=>{e.stopPropagation();s.classList.add('popping');score++;document.getElementById('score').textContent=score;setTimeout(()=>s.remove(),300)};
+      a.appendChild(s);setTimeout(()=>{if(s.parentNode)s.remove()},2200);
+    }
+    function endGame(){
+      running=false;clearInterval(ivl);clearInterval(sivl);
+      const o=document.getElementById('overlay');
+      o.innerHTML='<h2>🎉 Игра окончена!</h2><p>Ты поймал <b>'+score+'</b> звёздочек!</p><p>'+(score>20?'🏆 Потрясающе!':score>10?'👏 Хорошо!':'💪 Попробуй ещё!')+'</p><button onclick="startGame()">🔄 Снова!</button>';
+      o.style.display='flex';
+    }
+  <\/script>
+</body>
+</html>`,
+  },
+  chart: {
+    'index.html': `<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Мои Данные 📊</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"><\/script>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:#0d1117;color:#e6edf3;font-family:'Segoe UI',sans-serif;min-height:100vh;padding:24px}
+    h1{text-align:center;font-size:1.8em;margin-bottom:22px;background:linear-gradient(90deg,#58a6ff,#bc8cff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .charts{display:grid;grid-template-columns:1fr 1fr;gap:18px;max-width:860px;margin:0 auto}
+    .box{background:#161b22;border:1px solid #30363d;border-radius:11px;padding:18px}
+    h3{color:#8b949e;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px}
+  </style>
+</head>
+<body>
+  <h1>📊 Мои Данные</h1>
+  <div class="charts">
+    <div class="box"><h3>Любимые языки</h3><canvas id="c1"></canvas></div>
+    <div class="box"><h3>Прогресс по неделям</h3><canvas id="c2"></canvas></div>
+  </div>
+  <script>
+    new Chart(document.getElementById('c1'),{type:'doughnut',data:{labels:['JS','Python','HTML/CSS','Java','Другое'],datasets:[{data:[35,28,20,12,5],backgroundColor:['#f7df1e','#3776ab','#e34f26','#ed8b00','#8b949e'],borderWidth:0}]},options:{plugins:{legend:{labels:{color:'#e6edf3'}}}}});
+    new Chart(document.getElementById('c2'),{type:'line',data:{labels:['Нед 1','Нед 2','Нед 3','Нед 4','Нед 5','Нед 6'],datasets:[{label:'Проекты',data:[1,3,4,7,8,12],borderColor:'#58a6ff',backgroundColor:'rgba(88,166,255,.1)',fill:true,tension:.4}]},options:{scales:{x:{ticks:{color:'#8b949e'},grid:{color:'#21262d'}},y:{ticks:{color:'#8b949e'},grid:{color:'#21262d'}}},plugins:{legend:{labels:{color:'#e6edf3'}}}}});
+  <\/script>
+</body>
+</html>`,
+  },
+};
+
+// ══════════════════════════════════════════════════
+// FILES
+// ══════════════════════════════════════════════════
+const FILES = {
+  store: {}, active: null,
+  init() {
+    const saved = localStorage.getItem('vc_files');
+    if (saved) { try { this.store = JSON.parse(saved); } catch(e){} }
+    if (!Object.keys(this.store).length) this.loadTemplate('hello');
+    this.active = Object.keys(this.store)[0];
+    this.render();
+  },
+  save() { localStorage.setItem('vc_files', JSON.stringify(this.store)); },
+  create(name, content='') {
+    if (!name) return;
+    name = name.trim();
+    if (!name.includes('.')) name += '.html';
+    if (this.store[name] !== undefined) { TOAST.show('Файл уже существует!','err'); return; }
+    this.store[name] = content; this.active = name; this.save(); this.render(); EDITOR.loadFile(name);
+    TOAST.show('📄 Создан: '+name,'ok');
+  },
+  remove(name) {
+    if (!name) return;
+    if (Object.keys(this.store).length === 1) { TOAST.show('Нельзя удалить последний файл!','err'); return; }
+    delete this.store[name]; this.active = Object.keys(this.store)[0]; this.save(); this.render(); EDITOR.loadFile(this.active);
+    TOAST.show('🗑 Удалён: '+name,'info');
+  },
+  setActive(name) {
+    if (this.active && window.cmEditor) this.store[this.active] = window.cmEditor.getValue();
+    this.active = name; this.render(); EDITOR.loadFile(name);
+  },
+  getContent(name) { return this.store[name] || ''; },
+  setContent(name, content) { this.store[name] = content; this.save(); },
+  getAllForPreview() { return {...this.store}; },
+  icon(name) {
+    if (name.endsWith('.html')) return '🌐'; if (name.endsWith('.css')) return '🎨';
+    if (name.endsWith('.js')) return '⚡'; if (name.endsWith('.py')) return '🐍'; return '📄';
+  },
+  render() {
+    const list = document.getElementById('fileList');
+    const tabs = document.getElementById('editor-tabs');
+    if (!list || !tabs) return;
+    list.innerHTML = Object.keys(this.store).map(n =>
+      `<div class="file-item ${n===this.active?'active':''}" data-name="${n}">${this.icon(n)} ${n}</div>`
+    ).join('');
+    tabs.innerHTML = Object.keys(this.store).map(n =>
+      `<div class="editor-tab ${n===this.active?'active':''}" data-name="${n}">${this.icon(n)} ${n}</div>`
+    ).join('');
+    list.querySelectorAll('.file-item').forEach(el => el.addEventListener('click', () => this.setActive(el.dataset.name)));
+    tabs.querySelectorAll('.editor-tab').forEach(el => el.addEventListener('click', () => this.setActive(el.dataset.name)));
+  },
+  loadTemplate(name) {
+    const tpl = TEMPLATES[name]; if (!tpl) return;
+    this.store = {...tpl}; this.active = Object.keys(tpl)[0]; this.save();
+  },
+};
+
+// ══════════════════════════════════════════════════
+// EDITOR
+// ══════════════════════════════════════════════════
+const EDITOR = {
+  cm: null,
+  init() {
+    this.cm = CodeMirror.fromTextArea(document.getElementById('codeEditor'), {
+      theme: 'dracula', lineNumbers: true, autoCloseBrackets: true, matchBrackets: true,
+      indentUnit: 2, tabSize: 2, lineWrapping: false, mode: 'htmlmixed',
+      extraKeys: {
+        'Ctrl-Enter': () => PREVIEW.run(),
+        'Ctrl-S': () => { if(FILES.active) FILES.setContent(FILES.active, this.cm.getValue()); TOAST.show('💾 Сохранено!','ok'); },
+        'Tab': cm => cm.replaceSelection('  '),
+      },
+    });
+    window.cmEditor = this.cm;
+    let st;
+    this.cm.on('change', () => { clearTimeout(st); st = setTimeout(() => { if(FILES.active) FILES.setContent(FILES.active, this.cm.getValue()); }, 700); });
+  },
+  loadFile(name) {
+    if (!this.cm) return;
+    this.cm.setValue(FILES.getContent(name));
+    const m = name.endsWith('.html')?'htmlmixed':name.endsWith('.css')?'css':name.endsWith('.js')?'javascript':name.endsWith('.py')?'python':'htmlmixed';
+    this.cm.setOption('mode', m);
+    this.cm.clearHistory();
+    setTimeout(() => this.cm.refresh(), 50);
+  },
+  getCurrentCode() { return this.cm ? this.cm.getValue() : ''; },
+  setCode(code) { if (!this.cm) return; this.cm.setValue(code); if(FILES.active) FILES.setContent(FILES.active, code); },
+};
+
+// ══════════════════════════════════════════════════
+// PREVIEW
+// ══════════════════════════════════════════════════
+const PREVIEW = {
+  run() {
+    const lang = document.getElementById('langSelect').value;
+    if (lang === 'python') { this.runPython(); return; }
+    const files = FILES.getAllForPreview();
+    let html = files['index.html'] || FILES.getContent(FILES.active);
+    // Inline css and js files
+    Object.entries(files).forEach(([n,c]) => {
+      if (n.endsWith('.css')) html = html.replace(new RegExp(`<link[^>]+href=["']${n}["'][^>]*>`,'gi'), `<style>${c}</style>`);
+      if (n.endsWith('.js'))  html = html.replace(new RegExp(`<script[^>]+src=["']${n}["'][^>]*><\\/script>`,'gi'), `<script>${c}<\/script>`);
+    });
+    const blob = new Blob([html], {type:'text/html'});
+    document.getElementById('preview').src = URL.createObjectURL(blob);
+    TERMINAL.log('▶ Запущен HTML проект','ok');
+  },
+  runPython() {
+    TERMINAL.log('🐍 Python запустить можно через терминал: python print("hello")','out');
+    TERMINAL.log('(Полный Pyodide загрузится как откроешь файл на GitHub Pages)','out');
+  },
+  refresh() { this.run(); },
+};
+
+// ══════════════════════════════════════════════════
+// TERMINAL
+// ══════════════════════════════════════════════════
+const TERMINAL = {
+  history: [], hi: -1,
+  init() {
+    const inp = document.getElementById('termInput');
+    inp.addEventListener('keydown', e => {
+      if (e.key==='Enter') { const c=inp.value.trim(); if(c){this.history.unshift(c);this.hi=-1;this.execute(c);inp.value='';} }
+      if (e.key==='ArrowUp') { this.hi=Math.min(this.hi+1,this.history.length-1); inp.value=this.history[this.hi]||''; }
+      if (e.key==='ArrowDown') { this.hi=Math.max(this.hi-1,-1); inp.value=this.hi>=0?this.history[this.hi]:''; }
+    });
+    document.getElementById('btnClearTerm').addEventListener('click', () => this.clear());
+    this.log('✨ VibeCode Terminal готов!','ok');
+    this.log('Введи "help" для справки','out');
+  },
+  log(text, type='out') {
+    const o=document.getElementById('terminal-output');
+    const d=document.createElement('div'); d.className='term-line '+type; d.textContent=text;
+    o.appendChild(d); o.scrollTop=o.scrollHeight;
+  },
+  clear() { document.getElementById('terminal-output').innerHTML=''; this.log('🗑 Очищен','out'); },
+  execute(cmd) {
+    this.log('$ '+cmd,'cmd');
+    const [c,...args] = cmd.trim().split(/\s+/);
+    switch(c.toLowerCase()) {
+      case 'help':
+        ['help — Справка','ls — Файлы проекта','run — Запустить','new [имя] — Создать файл','rm [имя] — Удалить файл',
+         'cat [имя] — Показать файл','clear — Очистить','template [hello|robot|game|chart] — Шаблон',
+         'save — Сохранить','echo [текст] — Вывести','date — Дата','version — Версия']
+        .forEach(l => this.log('  '+l,'out')); break;
+      case 'ls': Object.keys(FILES.store).forEach(f=>this.log('  📄 '+f,'out')); break;
+      case 'run': PREVIEW.run(); this.log('▶ Запускаю...','ok'); break;
+      case 'new': case 'touch': args[0]?FILES.create(args[0],''):this.log('Укажи имя: new файл.html','err'); break;
+      case 'rm': case 'delete': args[0]?FILES.remove(args[0]):this.log('Укажи имя: rm файл.html','err'); break;
+      case 'cat':
+        if(args[0]){ FILES.getContent(args[0]).split('\n').slice(0,25).forEach(l=>this.log(l,'out')); }
+        else this.log('Укажи имя: cat index.html','err'); break;
+      case 'clear': this.clear(); return;
+      case 'template':
+        if(args[0]&&TEMPLATES[args[0]]){FILES.loadTemplate(args[0]);FILES.render();EDITOR.loadFile(FILES.active);TOAST.show('✨ Шаблон загружен!','ok');}
+        else this.log('Шаблоны: hello, robot, game, chart','out'); break;
+      case 'save': FILES.save(); this.log('💾 Сохранено!','ok'); break;
+      case 'echo': this.log(args.join(' '),'out'); break;
+      case 'date': this.log(new Date().toLocaleString('ru-RU'),'out'); break;
+      case 'version': this.log('VibeCode Studio v1.0 ⚡','ok'); break;
+      default: this.log(`Неизвестная команда: "${c}". Введи "help"`, 'err');
+    }
+  },
+};
+
+// ══════════════════════════════════════════════════
+// AI
+// ══════════════════════════════════════════════════
+const AI = {
+  key: '', model: 'openai/gpt-4o-mini', history: [],
+  SYS: `Ты VibeBot — дружелюбный AI-помощник для начинающих программистов в VibeCode Studio. Отвечай на русском, кратко и понятно. Когда пишешь код, оборачивай в блоки \`\`\`html, \`\`\`css, \`\`\`js, \`\`\`python. Используй эмодзи. Будь краток — не более 200 слов без кода.`,
+
+  init() {
+    this.key = localStorage.getItem('vc_or_key')||'';
+    this.model = localStorage.getItem('vc_or_model')||'openai/gpt-4o-mini';
+    if (this.key) {
+      document.getElementById('orKey').value = this.key;
+      document.getElementById('keyStatus').textContent = '✅ Ключ загружен';
+      document.getElementById('keyStatus').className = 'status-msg ok';
+      // Auto-load models if key is saved
+      setTimeout(() => this.loadModels(true), 500);
+    }
+    this._bind();
+    this.addMsg('ai','👋 Привет! Я VibeBot — твой AI-напарник! 🤖\n\nМогу помочь:\n• ✨ Написать или улучшить код\n• 🐛 Найти ошибки\n• 💡 Объяснить код\n• 🤖 Создать робота-друга\n\nВведи OpenRouter API ключ слева и начнём! 🚀');
+  },
+
+  _bind() {
+    document.getElementById('btnSaveKey').onclick = () => {
+      const k = document.getElementById('orKey').value.trim();
+      const m = document.getElementById('orModel').value;
+      if (!k) { TOAST.show('Введи API ключ!','err'); return; }
+      this.key = k; this.model = m;
+      localStorage.setItem('vc_or_key', k); localStorage.setItem('vc_or_model', m);
+      document.getElementById('keyStatus').textContent = '✅ Сохранено!';
+      document.getElementById('keyStatus').className = 'status-msg ok';
+      TOAST.show('🔑 API ключ сохранён!','ok');
+    };
+    document.getElementById('btnCheckKey').onclick = () => this.checkKey();
+    document.getElementById('btnLoadModels').onclick = () => this.loadModels(false);
+    document.getElementById('btnShowKey').onclick = () => { const i = document.getElementById('orKey'); i.type = i.type==='password'?'text':'password'; };
+    document.getElementById('orModel').onchange = e => {
+      this.model = e.target.value;
+      localStorage.setItem('vc_or_model', this.model);
+      this._updateModelInfo(e.target.selectedOptions[0]);
+    };
+    document.getElementById('btnSend').onclick = () => this.send();
+    document.getElementById('chatInput').onkeydown = e => { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();this.send();} };
+    document.querySelectorAll('.qp-btn').forEach(b => b.onclick = () => { document.getElementById('chatInput').value=b.dataset.p; this.send(); });
+  },
+
+  _updateModelInfo(option) {
+    const info = document.getElementById('modelInfo');
+    if (!info || !option) return;
+    const price = option.dataset.price || '';
+    const ctx = option.dataset.ctx || '';
+    info.textContent = [price && `💰 ${price}`, ctx && `📄 ctx: ${ctx}`].filter(Boolean).join('  ');
+  },
+
+  async loadModels(silent = false) {
+    const key = document.getElementById('orKey').value.trim() || this.key;
+    if (!key) { if (!silent) TOAST.show('Сначала введи API ключ!','err'); return; }
+
+    const sel = document.getElementById('orModel');
+    if (!silent) { sel.innerHTML = '<option>⏳ Загружаю модели...</option>'; sel.disabled = true; }
+
+    try {
+      const r = await fetch('https://openrouter.ai/api/v1/models', {
+        headers: { 'Authorization': 'Bearer ' + key }
+      });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const data = await r.json();
+      const models = data.data || [];
+
+      // Filter to models that support chat completions and sort by popularity
+      const chatModels = models
+        .filter(m => m.id && m.name)
+        .sort((a, b) => {
+          // Prioritize popular providers
+          const order = ['openai', 'anthropic', 'google', 'meta-llama', 'mistralai', 'x-ai'];
+          const ai = order.findIndex(p => a.id.startsWith(p));
+          const bi = order.findIndex(p => b.id.startsWith(p));
+          if (ai !== -1 && bi !== -1) return ai - bi;
+          if (ai !== -1) return -1;
+          if (bi !== -1) return 1;
+          return a.name.localeCompare(b.name);
+        });
+
+      sel.disabled = false;
+      sel.innerHTML = '';
+
+      // Group by provider
+      const groups = {};
+      chatModels.forEach(m => {
+        const provider = m.id.split('/')[0];
+        if (!groups[provider]) groups[provider] = [];
+        groups[provider].push(m);
+      });
+
+      Object.entries(groups).forEach(([provider, mods]) => {
+        const grp = document.createElement('optgroup');
+        grp.label = '── ' + provider.toUpperCase() + ' ──';
+        mods.forEach(m => {
+          const opt = document.createElement('option');
+          opt.value = m.id;
+          // Format pricing
+          const priceIn = m.pricing?.prompt ? (parseFloat(m.pricing.prompt) * 1000000).toFixed(2) : '?';
+          const priceOut = m.pricing?.completion ? (parseFloat(m.pricing.completion) * 1000000).toFixed(2) : '?';
+          const isFree = parseFloat(m.pricing?.prompt || '1') === 0;
+          const ctx = m.context_length ? (m.context_length >= 1000 ? Math.round(m.context_length/1000)+'k' : m.context_length) : '';
+          opt.textContent = m.name + (isFree ? ' 🆓' : '');
+          opt.dataset.price = isFree ? 'Бесплатно!' : `$${priceIn}/$${priceOut} за 1M`;
+          opt.dataset.ctx = ctx;
+          if (m.id === this.model) opt.selected = true;
+          grp.appendChild(opt);
+        });
+        sel.appendChild(grp);
+      });
+
+      // If saved model not in list, add it
+      if (!sel.value || sel.value !== this.model) {
+        const fallback = document.createElement('option');
+        fallback.value = this.model; fallback.textContent = this.model; fallback.selected = true;
+        sel.insertBefore(fallback, sel.firstChild);
+      }
+
+      this._updateModelInfo(sel.selectedOptions[0]);
+      if (!silent) TOAST.show(`✅ Загружено ${chatModels.length} моделей!`, 'ok');
+      TERMINAL.log(`📋 Загружено ${chatModels.length} моделей OpenRouter`, 'ok');
+
+    } catch(e) {
+      sel.disabled = false;
+      if (!silent) { TOAST.show('❌ Ошибка загрузки моделей: ' + e.message, 'err'); }
+      // Restore defaults on failure
+      if (!sel.options.length || sel.options[0].textContent.includes('Загружаю')) {
+        sel.innerHTML = `
+          <option value="openai/gpt-4o-mini">GPT-4o Mini ⚡</option>
+          <option value="openai/gpt-4o">GPT-4o 🧠</option>
+          <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet ✨</option>
+          <option value="google/gemini-2.0-flash-001">Gemini 2.0 Flash 🚀</option>
+          <option value="meta-llama/llama-3.1-8b-instruct">Llama 3.1 8B 🦙</option>
+          <option value="mistralai/mistral-7b-instruct">Mistral 7B 💨</option>
+        `;
+        // Select saved model
+        [...sel.options].forEach(o => { if(o.value===this.model) o.selected=true; });
+      }
+    }
+  },
+
+  async checkKey() {
+    const k = document.getElementById('orKey').value.trim();
+    if (!k) { TOAST.show('Введи ключ!','err'); return; }
+    const s = document.getElementById('keyStatus');
+    s.textContent = '⏳ Проверяю...'; s.className = 'status-msg';
+
+    try {
+      // Step 1: check models endpoint (validates the key itself)
+      const r = await fetch('https://openrouter.ai/api/v1/models', {
+        headers: { 'Authorization': 'Bearer ' + k }
+      });
+      if (!r.ok) throw new Error('Неверный ключ (HTTP ' + r.status + ')');
+
+      const data = await r.json();
+      const count = data.data?.length || 0;
+      s.textContent = `✅ Ключ работает! (${count} моделей)`; s.className = 'status-msg ok';
+
+      // Step 2: Test actual inference with selected model
+      const model = document.getElementById('orModel').value;
+      s.textContent = `⏳ Тестирую модель ${model}...`; s.className = 'status-msg';
+
+      const testR = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer '+k, 'Content-Type': 'application/json', 'HTTP-Referer': location.href, 'X-Title': 'VibeCode Studio' },
+        body: JSON.stringify({ model, messages: [{ role: 'user', content: 'Reply with just: OK' }], max_tokens: 5 })
+      });
+
+      if (!testR.ok) {
+        const err = await testR.json().catch(()=>({}));
+        const msg = err.error?.message || 'HTTP ' + testR.status;
+        s.textContent = `⚠️ Ключ ОК, но модель: ${msg}`; s.className = 'status-msg err';
+        TOAST.show('⚠️ Смени модель! ' + msg, 'err');
+      } else {
+        const td = await testR.json();
+        const reply = td.choices?.[0]?.message?.content || '?';
+        s.textContent = `✅ Всё работает! Ответ: "${reply.trim()}"`; s.className = 'status-msg ok';
+        TOAST.show('✅ Ключ и модель работают!', 'ok');
+        // Auto-load models after successful check
+        await this.loadModels(true);
+      }
+    } catch(e) {
+      s.textContent = '❌ ' + e.message; s.className = 'status-msg err';
+      TOAST.show('❌ ' + e.message, 'err');
+    }
+  },
+
+  async send() {
+    const inp = document.getElementById('chatInput'), text = inp.value.trim(); if(!text) return;
+    inp.value = ''; this.addMsg('user', text);
+    if (!this.key) { this.addMsg('ai','⚠️ Нет API ключа! Введи в панели 🤖 слева.\nПолучить: openrouter.ai'); return; }
+    document.getElementById('robotStatus').className = 'robot-status thinking';
+    document.getElementById('robotStatus').textContent = '🤔';
+    document.getElementById('btnSend').disabled = true;
+    const tid = this._typing();
+    let userMsg = text, code = EDITOR.getCurrentCode();
+    if (code.trim()) userMsg += `\n\n[Файл: ${FILES.active}]\n\`\`\`\n${code.substring(0,2500)}\n\`\`\``;
+    this.history.push({role:'user', content:userMsg});
+    try {
+      const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Authorization':'Bearer '+this.key, 'Content-Type':'application/json', 'HTTP-Referer':location.href, 'X-Title':'VibeCode Studio' },
+        body: JSON.stringify({ model: this.model, messages: [{role:'system',content:this.SYS},...this.history.slice(-10)], max_tokens:2000, temperature:0.7 })
+      });
+      this._rmTyping(tid);
+      if (!r.ok) { const e=await r.json().catch(()=>({})); throw new Error(e.error?.message||'HTTP '+r.status); }
+      const d = await r.json(), reply = d.choices?.[0]?.message?.content||'Нет ответа';
+      this.history.push({role:'assistant',content:reply}); this.addMsg('ai',reply,true);
+    } catch(e) {
+      this._rmTyping(tid); this.addMsg('ai','❌ Ошибка: '+e.message); TERMINAL.log('❌ AI: '+e.message,'err');
+    } finally {
+      document.getElementById('robotStatus').className = 'robot-status';
+      document.getElementById('robotStatus').textContent = '😊';
+      document.getElementById('btnSend').disabled = false;
+    }
+  },
+
+  addMsg(role, text, parse=false) {
+    const msgs = document.getElementById('chat-messages'), m = document.createElement('div');
+    m.className = 'msg ' + role;
+    m.innerHTML = `<div class="msg-avatar">${role==='ai'?'🤖':'👤'}</div><div class="msg-body">${parse?this._md(text):this._esc(text).replace(/\n/g,'<br>')}</div>`;
+    msgs.appendChild(m); msgs.scrollTop = msgs.scrollHeight;
+    m.querySelectorAll('.btn-apply').forEach(b => b.onclick = () => { EDITOR.setCode(decodeURIComponent(b.dataset.code)); TOAST.show('✅ Код применён!','ok'); });
+  },
+  _md(text) {
+    let h = this._esc(text);
+    h = h.replace(/```(\w+)?\n?([\s\S]*?)```/g, (_,l,c) => `<pre><code>${c.trim()}</code></pre><button class="btn-apply" data-code="${encodeURIComponent(c.trim())}">⚡ Применить</button>`);
+    h = h.replace(/`([^`]+)`/g,'<code>$1</code>'); h = h.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>'); h = h.replace(/\n/g,'<br>'); return h;
+  },
+  _esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');},
+  _typing(){const id='tp'+Date.now(),m=document.getElementById('chat-messages'),e=document.createElement('div');e.className='msg ai';e.id=id;e.innerHTML='<div class="msg-avatar">🤖</div><div class="msg-body"><div class="typing-dots"><span></span><span></span><span></span></div></div>';m.appendChild(e);m.scrollTop=m.scrollHeight;return id;},
+  _rmTyping(id){const e=document.getElementById(id);if(e)e.remove();},
+};
+
+// ══════════════════════════════════════════════════
+// GITHUB
+// ══════════════════════════════════════════════════
+const GITHUB = {
+  token:'', user:null,
+  init() {
+    const saved=localStorage.getItem('vc_gh_token');
+    if(saved) this._login(saved,true);
+    document.getElementById('btnGhLogin').onclick=()=>{const t=document.getElementById('ghToken').value.trim();if(!t){TOAST.show('Введи токен!','err');return;}this._login(t);};
+    document.getElementById('btnGhLogout').onclick=()=>this.logout();
+    document.getElementById('btnGhSave').onclick=()=>{document.getElementById('modalGhSave').style.display='flex';};
+    document.getElementById('btnGhPublish').onclick=()=>this.publish();
+    document.getElementById('btnPublish').onclick=()=>{if(!this.user){TOAST.show('Сначала войди в GitHub!','err');document.querySelector('[data-tab="github"]').click();}else this.publish();};
+    document.getElementById('btnShare').onclick=()=>{navigator.clipboard?.writeText(EDITOR.getCurrentCode()).then(()=>TOAST.show('📋 Код скопирован!','ok'));};
+    document.getElementById('btnCancelGh').onclick=()=>{document.getElementById('modalGhSave').style.display='none';};
+    document.getElementById('btnConfirmGh').onclick=()=>this.saveToGH();
+  },
+  async _login(token, silent=false) {
+    try {
+      const r=await fetch('https://api.github.com/user',{headers:{'Authorization':'token '+token}});
+      if(!r.ok) throw new Error('Неверный токен');
+      const u=await r.json(); this.token=token; this.user=u;
+      localStorage.setItem('vc_gh_token',token);
+      document.getElementById('ghLoginSection').style.display='none';
+      const gs=document.getElementById('ghUserSection'); gs.style.display='flex'; gs.style.flexDirection='column'; gs.style.gap='5px';
+      document.getElementById('ghAvatar').src=u.avatar_url; document.getElementById('ghUsername').textContent=u.login;
+      if(!silent){TOAST.show('🐙 Вошёл как '+u.login+'!','ok');TERMINAL.log('🐙 GitHub: '+u.login,'ok');}
+      this.loadRepos();
+    } catch(e) { if(!silent){TOAST.show('❌ '+e.message,'err');}else{localStorage.removeItem('vc_gh_token');this.token='';} }
+  },
+  logout(){this.token='';this.user=null;localStorage.removeItem('vc_gh_token');document.getElementById('ghLoginSection').style.display='block';document.getElementById('ghUserSection').style.display='none';document.getElementById('ghToken').value='';TOAST.show('👋 Вышел','info');},
+  async loadRepos(){
+    if(!this.token)return;
+    try{const r=await fetch('https://api.github.com/user/repos?per_page=20&sort=updated',{headers:{'Authorization':'token '+this.token}});
+    const repos=await r.json();const l=document.getElementById('repoList');
+    if(!Array.isArray(repos)){l.innerHTML='<div class="hint-text">Нет репозиториев</div>';return;}
+    l.innerHTML=repos.slice(0,15).map(r=>`<div class="repo-item" data-repo="${r.name}" data-owner="${r.owner.login}">📁 ${r.name}</div>`).join('');
+    l.querySelectorAll('.repo-item').forEach(el=>el.onclick=()=>this.loadRepo(el.dataset.owner,el.dataset.repo));}catch(e){}
+  },
+  async loadRepo(owner,repo){
+    TOAST.show('📂 Загружаю '+repo+'...','info');
+    try{const r=await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/`,{headers:{'Authorization':'token '+this.token}});
+    const files=await r.json();FILES.store={};
+    for(const f of files){if(f.type==='file'&&f.size<100000){const fr=await fetch(f.download_url);FILES.store[f.name]=await fr.text();}}
+    FILES.active=Object.keys(FILES.store)[0]||'index.html';FILES.save();FILES.render();EDITOR.loadFile(FILES.active);
+    TOAST.show('✅ Загружен '+repo+'!','ok');}catch(e){TOAST.show('❌ Ошибка загрузки','err');}
+  },
+  async saveToGH(){
+    const name=document.getElementById('ghRepoName').value.trim().replace(/[^a-z0-9-_]/gi,'-').toLowerCase();
+    const desc=document.getElementById('ghRepoDesc').value.trim()||'Проект из VibeCode Studio';
+    if(!name){TOAST.show('Введи название!','err');return;}
+    document.getElementById('modalGhSave').style.display='none';
+    TOAST.show('⏳ Сохраняю...','info');
+    try{await fetch('https://api.github.com/user/repos',{method:'POST',headers:{'Authorization':'token '+this.token,'Content-Type':'application/json'},body:JSON.stringify({name,description:desc,private:false,auto_init:false})});
+    const rn=`${this.user.login}/${name}`;
+    for(const[fn,fc]of Object.entries(FILES.getAllForPreview())){await fetch(`https://api.github.com/repos/${rn}/contents/${fn}`,{method:'PUT',headers:{'Authorization':'token '+this.token,'Content-Type':'application/json'},body:JSON.stringify({message:'VibeCode: update',content:btoa(unescape(encodeURIComponent(fc)))})});}
+    TOAST.show('✅ Сохранено!','ok');TERMINAL.log('✅ https://github.com/'+rn,'ok');this.loadRepos();}catch(e){TOAST.show('❌ Ошибка','err');}
+  },
+  async publish(){
+    if(!this.user){TOAST.show('Войди в GitHub!','err');return;}
+    const name=prompt('Название проекта:','my-vibe-site');if(!name)return;
+    const cn=name.replace(/[^a-z0-9-_]/gi,'-').toLowerCase();
+    TOAST.show('⏳ Публикую...','info');
+    try{await fetch('https://api.github.com/user/repos',{method:'POST',headers:{'Authorization':'token '+this.token,'Content-Type':'application/json'},body:JSON.stringify({name:cn,description:'VibeCode Studio ✨',private:false,auto_init:false})});
+    const rn=`${this.user.login}/${cn}`;
+    for(const[fn,fc]of Object.entries(FILES.getAllForPreview())){await fetch(`https://api.github.com/repos/${rn}/contents/${fn}`,{method:'PUT',headers:{'Authorization':'token '+this.token,'Content-Type':'application/json'},body:JSON.stringify({message:'VibeCode: publish',content:btoa(unescape(encodeURIComponent(fc)))})});}
+    await fetch(`https://api.github.com/repos/${rn}/pages`,{method:'POST',headers:{'Authorization':'token '+this.token,'Content-Type':'application/json'},body:JSON.stringify({source:{branch:'main',path:'/'}})});
+    const url=`https://${this.user.login}.github.io/${cn}/`;
+    TOAST.show('🌐 Опубликовано!','ok');TERMINAL.log('🌐 Сайт: '+url,'ok');navigator.clipboard?.writeText(url).then(()=>TOAST.show('📋 Ссылка скопирована!','info'));}catch(e){TOAST.show('❌ Ошибка публикации','err');}
+  },
+};
+
+// ══════════════════════════════════════════════════
+// RESIZER — drag-to-resize panels
+// ══════════════════════════════════════════════════
+const RESIZER = {
+  init() {
+    this._colResize('resizerLeft',  'sidebar-left', 'editor-zone',  'horizontal', 140, 380);
+    this._colResize('resizerRight', 'editor-zone',  'right-zone',   'horizontal', 150, 700);
+    this._rowResize('resizerTop',    'preview-pane', 'terminal-pane', 60, 600);
+    this._rowResize('resizerBottom', 'terminal-pane','ai-pane',       60, 500);
+  },
+
+  _colResize(resizerId, leftId, rightId, _dir, minLeft, maxLeft) {
+    const el = document.getElementById(resizerId);
+    const left = document.getElementById(leftId);
+    const right = document.getElementById(rightId);
+    if (!el || !left || !right) return;
+
+    let startX, startW;
+    el.addEventListener('mousedown', e => {
+      startX = e.clientX;
+      startW = left.getBoundingClientRect().width;
+      el.classList.add('dragging');
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+
+      const onMove = e => {
+        const delta = e.clientX - startX;
+        const newW = Math.min(maxLeft, Math.max(minLeft, startW + delta));
+        left.style.width = newW + 'px';
+        left.style.flex = 'none';
+        if (window.cmEditor) window.cmEditor.refresh();
+      };
+      const onUp = () => {
+        el.classList.remove('dragging');
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        if (window.cmEditor) window.cmEditor.refresh();
+      };
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+      e.preventDefault();
+    });
+  },
+
+  _rowResize(resizerId, topId, botId, minTop, maxTop) {
+    const el = document.getElementById(resizerId);
+    const top = document.getElementById(topId);
+    const bot = document.getElementById(botId);
+    if (!el || !top || !bot) return;
+
+    let startY, startH;
+    el.addEventListener('mousedown', e => {
+      startY = e.clientY;
+      startH = top.getBoundingClientRect().height;
+      el.classList.add('dragging');
+      document.body.style.cursor = 'row-resize';
+      document.body.style.userSelect = 'none';
+
+      const onMove = e => {
+        const delta = e.clientY - startY;
+        const newH = Math.min(maxTop, Math.max(minTop, startH + delta));
+        top.style.height = newH + 'px';
+        top.style.flex = 'none';
+      };
+      const onUp = () => {
+        el.classList.remove('dragging');
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+      };
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+      e.preventDefault();
+    });
+  },
+};
+
+// ══════════════════════════════════════════════════
+// APP INIT
+// ══════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  FILES.init();
+  EDITOR.init();
+  EDITOR.loadFile(FILES.active);
+  TERMINAL.init();
+  AI.init();
+  GITHUB.init();
+  RESIZER.init();
+
+  // Sidebar tabs
+  document.querySelectorAll('.stab').forEach(tab => {
+    tab.onclick = () => {
+      document.querySelectorAll('.stab').forEach(t=>t.classList.remove('active'));
+      document.querySelectorAll('.sidebar-panel').forEach(p=>p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('panel-'+tab.dataset.tab)?.classList.add('active');
+    };
+  });
+
+  // Buttons
+  document.getElementById('btnRun').onclick = () => PREVIEW.run();
+  document.getElementById('btnRefresh').onclick = () => PREVIEW.refresh();
+  document.getElementById('btnFullscreen').onclick = () => { const f=document.getElementById('preview'); if(f.requestFullscreen)f.requestFullscreen(); };
+  document.getElementById('btnNewFile').onclick = () => { document.getElementById('modalNewFile').style.display='flex'; document.getElementById('newFileName').focus(); };
+  document.getElementById('btnCancelFile').onclick = () => { document.getElementById('modalNewFile').style.display='none'; };
+  document.getElementById('btnConfirmFile').onclick = () => { FILES.create(document.getElementById('newFileName').value); document.getElementById('modalNewFile').style.display='none'; document.getElementById('newFileName').value=''; };
+  document.getElementById('newFileName').onkeydown = e => { if(e.key==='Enter') document.getElementById('btnConfirmFile').click(); };
+  document.getElementById('btnDeleteFile').onclick = () => { if(confirm('Удалить файл "'+FILES.active+'"?')) FILES.remove(FILES.active); };
+
+  // Template buttons
+  document.querySelectorAll('.tpl-btn').forEach(b => b.onclick = () => {
+    if(confirm('Загрузить шаблон? Текущие файлы будут заменены.')) {
+      FILES.loadTemplate(b.dataset.tpl); FILES.render(); EDITOR.loadFile(FILES.active);
+      setTimeout(()=>PREVIEW.run(),150); TOAST.show('✨ Шаблон загружен!','ok');
+    }
+  });
+
+  // Lang switch
+  document.getElementById('langSelect').onchange = e => {
+    const lang=e.target.value;
+    if(lang==='python'&&!FILES.store['main.py']) FILES.create('main.py','# Python код\nprint("Привет из Python! 🐍")\n\nfor i in range(5):\n    print(f"Шаг {i+1}: ✨")\n');
+    else if(lang==='python') FILES.setActive('main.py');
+    else if(lang==='html') FILES.setActive('index.html');
+    else if(lang==='js') { if(!FILES.store['script.js']) FILES.create('script.js','// JavaScript\nconsole.log("Привет из JS! ⚡");\n'); else FILES.setActive('script.js'); }
+  };
+
+  // Close modals on overlay click
+  document.querySelectorAll('.modal-overlay').forEach(o => o.onclick = e => { if(e.target===o) o.style.display='none'; });
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', e => {
+    if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();PREVIEW.run();}
+    if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();FILES.save();TOAST.show('💾 Сохранено!','ok');}
+    if(e.key==='Escape') document.querySelectorAll('.modal-overlay').forEach(m=>m.style.display='none');
+  });
+
+  // Fix CodeMirror on resize
+  new ResizeObserver(() => { if(window.cmEditor) window.cmEditor.refresh(); }).observe(document.getElementById('editor-wrap'));
+
+  // Auto-run after short delay
+  setTimeout(() => PREVIEW.run(), 400);
+});
+</script>
+</body>
+</html>
