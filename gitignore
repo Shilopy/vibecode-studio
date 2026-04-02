@@ -1,0 +1,55 @@
+# ═══════════════════════════════════
+# .gitignore — VibeCode Studio
+# Файлы которые Git НЕ будет трекать
+# ═══════════════════════════════════
+
+# 🔑 СЕКРЕТЫ — никогда не пушить!
+*token*
+*secret*
+*password*
+*key*
+*.env
+.env.*
+config.local.*
+
+# 📝 Текстовые файлы с чувствительными данными
+secrets.txt
+credentials.txt
+auth.txt
+
+# 🗂 Системные файлы Windows
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# 🗂 Системные файлы Mac
+.DS_Store
+.AppleDouble
+.Spotlight-V100
+
+# 📦 Node.js (если будешь использовать)
+node_modules/
+npm-debug.log*
+package-lock.json
+
+# 🐍 Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# 🛠 Редакторы
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# 📋 Логи
+*.log
+logs/
+
+# 🗃 Временные файлы
+*.tmp
+*.temp
+~$*
